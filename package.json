@@ -1,0 +1,58 @@
+{
+  "name": "error-question-system",
+  "version": "1.0.0",
+  "description": "A system for collecting and managing error questions",
+  "main": "src/index.tsx",
+  "scripts": {
+    "start": "react-scripts start",
+    "dev": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^5.0.0",
+    "@reduxjs/toolkit": "^1.9.0",
+    "@tinymce/tinymce-react": "^4.0.0",
+    "antd": "^5.0.0",
+    "dayjs": "^1.11.7",
+    "echarts": "^5.4.0",
+    "echarts-for-react": "^3.0.0",
+    "idb": "^7.1.1",
+    "quill": "^2.0.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-quill": "^2.0.0",
+    "react-redux": "^8.0.0",
+    "react-router-dom": "^6.0.0",
+    "react-scripts": "5.0.1",
+    "typescript": "^4.9.0",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^16.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@types/react-redux": "^7.1.25",
+    "@types/react-router-dom": "^5.3.3",
+    "@types/uuid": "^9.0.8",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.0.0",
+    "eslint": "^8.0.0",
+    "eslint-config-react-app": "^7.0.0",
+    "prettier": "^2.8.0",
+    "sass": "^1.62.1"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

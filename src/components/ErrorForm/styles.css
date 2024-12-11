@@ -1,0 +1,56 @@
+.editor-container {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.editor-container .quill {
+  background: #fff;
+  border-radius: 2px;
+}
+
+/* Quill 编辑器样式覆盖 */
+.ql-toolbar.ql-snow,
+.ql-container.ql-snow {
+  border: 1px solid #d9d9d9 !important;
+}
+
+.ql-toolbar.ql-snow {
+  border-top-left-radius: 2px;
+  border-top-right-radius: 2px;
+  border-bottom: none !important;
+  background: #fff;
+}
+
+.ql-container.ql-snow {
+  border-bottom-left-radius: 2px;
+  border-bottom-right-radius: 2px;
+  min-height: 200px;
+}
+
+/* 编辑器内容区域样式 */
+.ql-editor {
+  min-height: 200px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* 工具栏按钮悬停效果 */
+.ql-toolbar.ql-snow .ql-picker-label:hover,
+.ql-toolbar.ql-snow .ql-picker-item:hover {
+  color: #1890ff;
+}
+
+.ql-toolbar.ql-snow button:hover,
+.ql-toolbar.ql-snow button.ql-active {
+  color: #1890ff;
+}
+
+/* 工具栏分隔符样式 */
+.ql-toolbar.ql-snow .ql-formats {
+  margin-right: 15px;
+}
+
+/* 编辑器聚焦时的边框颜色 */
+.ql-container.ql-snow.ql-focus {
+  border-color: #40a9ff !important;
+} 
