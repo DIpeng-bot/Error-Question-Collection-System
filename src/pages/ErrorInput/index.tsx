@@ -5,35 +5,21 @@ import { v4 as uuidv4 } from 'uuid';
 import ErrorForm from '../../components/ErrorForm';
 import { ErrorQuestion } from '../../models/types';
 import { StorageService } from '../../services/storage';
-import { useAppSelector } from '../../services/store';
 
 const ErrorInput: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const user = useAppSelector(state => state.user.currentUser);
   const [initialValues, setInitialValues] = useState<ErrorQuestion>();
   const [loading, setLoading] = useState(!!id);
   const storageService = StorageService.getInstance();
 
-  // 检查用户登录状态
-  useEffect(() => {
-    if (!user) {
-      message.error('请先登录');
-      navigate('/login');
-    }
-  }, [user, navigate]);
-
+  // 加载已有错题数据
   useEffect(() => {
     const loadQuestion = async () => {
-      if (id && user) {
+      if (id) {
         try {
           const question = await storageService.getErrorQuestion(id);
           if (question) {
-            if (question.userId !== user.id) {
-              message.error('您没有权限编辑此错题');
-              navigate('/management');
-              return;
-            }
             setInitialValues(question);
           } else {
             message.error('错题不存在');
@@ -52,16 +38,10 @@ const ErrorInput: React.FC = () => {
     if (id) {
       loadQuestion();
     }
-  }, [id, user, navigate]);
+  }, [id, navigate]);
 
   const handleSubmit = async (questionData: Omit<ErrorQuestion, 'id' | 'userId' | 'createTime' | 'reviewStatus' | 'nextReviewTime' | 'reviewCount'>) => {
     try {
-      if (!user) {
-        message.error('请先登录');
-        navigate('/login');
-        return;
-      }
-
       const question: ErrorQuestion = id
         ? {
             ...initialValues!,
@@ -70,7 +50,7 @@ const ErrorInput: React.FC = () => {
         : {
             ...questionData,
             id: uuidv4(),
-            userId: user.id,
+            userId: 'default-user', // 临时使用默认用户ID
             createTime: new Date(),
             reviewStatus: 'pending',
             nextReviewTime: new Date(),
@@ -86,16 +66,6 @@ const ErrorInput: React.FC = () => {
     }
   };
 
-  // 如果用户未登录，显示加载状态
-  if (!user) {
-    return (
-      <Card title={id ? '编辑错题' : '录入错题'} bordered={false}>
-        <Spin tip="检查登录状态..." />
-      </Card>
-    );
-  }
-
-  // 如果正在加载错题，显示加载状态
   if (loading) {
     return (
       <Card title={id ? '编辑错题' : '录入错题'} bordered={false}>

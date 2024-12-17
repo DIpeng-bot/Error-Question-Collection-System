@@ -53,4 +53,35 @@
 /* 编辑器聚焦时的边框颜色 */
 .ql-container.ql-snow.ql-focus {
   border-color: #40a9ff !important;
+}
+
+/* 处理中遮罩 */
+.processing-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* 相机按钮样式 */
+.ant-form-item-extra .ant-btn-link {
+  padding: 0;
+  height: auto;
+  line-height: 1;
+}
+
+.ant-form-item-extra .anticon {
+  margin-right: 4px;
+}
+
+/* 模态框内容区域最大高度 */
+.ant-modal-body {
+  max-height: 80vh;
+  overflow-y: auto;
 } 

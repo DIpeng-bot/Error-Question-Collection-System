@@ -1,16 +1,28 @@
-// 用户角色类型
-export type UserRole = 'student' | 'teacher';
-
-// 用户模型
+// 用户相关类型
 export interface User {
   id: string;
-  role: UserRole;
   name: string;
-  class?: string;
+  role: 'student' | 'teacher';
   subjects: string[];
+  email?: string;
+  avatar?: string;
+  createTime?: Date;
 }
 
-// 错题模型
+// 错题内容类型
+export interface QuestionContent {
+  text: string;
+  images: string[];
+}
+
+// 错题分析类型
+export interface QuestionAnalysis {
+  errorType: string;
+  reason: string;
+  explanation: string;
+}
+
+// 错题类型
 export interface ErrorQuestion {
   id: string;
   userId: string;
@@ -19,20 +31,13 @@ export interface ErrorQuestion {
   questionType: string;
   difficulty: number;
   importance: number;
-  content: {
-    text: string;
-    images: string[];
-  };
+  content: QuestionContent;
   correctAnswer: string;
   wrongAnswer: string;
-  analysis: {
-    errorType: string;
-    reason: string;
-    explanation: string;
-  };
+  analysis: QuestionAnalysis;
   tags: string[];
   createTime: Date;
-  reviewStatus: 'pending' | 'reviewed' | 'mastered';
+  reviewStatus: 'pending' | 'reviewing' | 'mastered';
   nextReviewTime: Date;
   reviewCount: number;
 }

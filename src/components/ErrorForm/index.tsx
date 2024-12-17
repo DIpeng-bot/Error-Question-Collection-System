@@ -1,12 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Form, Input, Select, InputNumber, Button, Space, Tag, message } from 'antd';
+import { Form, Input, Select, InputNumber, Button, Space, Tag, message, Modal, Spin } from 'antd';
 import type { InputRef } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, CameraOutlined } from '@ant-design/icons';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { ErrorQuestion } from '../../models/types';
 import { useAppSelector } from '../../services/store';
 import ImageUpload from '../ImageUpload';
+import Camera from '../Camera';
+import TextProofreader from '../TextProofreader';
+import { OCRService } from '../../services/ocr';
 import './styles.css';
 
 const { Option } = Select;
@@ -70,6 +73,10 @@ const ErrorForm: React.FC<ErrorFormProps> = ({ onSubmit, initialValues }) => {
   const [inputValue, setInputValue] = React.useState('');
   const inputRef = React.useRef<InputRef>(null);
   const user = useAppSelector(state => state.user.currentUser);
+  const [isCameraVisible, setIsCameraVisible] = useState(false);
+  const [isProofreadingVisible, setIsProofreadingVisible] = useState(false);
+  const [recognizedText, setRecognizedText] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // 设置初始值
   useEffect(() => {
@@ -122,135 +129,202 @@ const ErrorForm: React.FC<ErrorFormProps> = ({ onSubmit, initialValues }) => {
     setInputValue('');
   };
 
+  const handleCapture = async (imageData: string) => {
+    setIsCameraVisible(false);
+    setIsProcessing(true);
+    
+    try {
+      const textArray = await OCRService.recognizeText(imageData);
+      const processedText = OCRService.preprocessText(textArray);
+      setRecognizedText(processedText);
+      setIsProofreadingVisible(true);
+    } catch (error) {
+      console.error('OCR 识别失败:', error);
+      message.error('文字识别失败，请重试或手动输入');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleTextConfirm = (text: string) => {
+    setIsProofreadingVisible(false);
+    form.setFieldsValue({ content: text });
+  };
+
+  // 处理 OCR 识别结果
+  const handleOCRComplete = (text: string) => {
+    form.setFieldsValue({ content: text });
+  };
+
   return (
-    <Form
-      form={form}
-      layout="vertical"
-      onFinish={handleSubmit}
-      style={{ maxWidth: 800 }}
-    >
-      {/* 基本信息 */}
-      <Form.Item name="subject" label="科目" rules={[{ required: true, message: '请选择科目' }]}>
-        <Select>
-          {SUBJECTS.map(subject => (
-            <Option key={subject} value={subject}>{subject}</Option>
-          ))}
-        </Select>
-      </Form.Item>
-
-      <Form.Item name="chapter" label="章节" rules={[{ required: true, message: '请输入章节' }]}>
-        <Input />
-      </Form.Item>
-
-      <Form.Item name="questionType" label="题型" rules={[{ required: true, message: '请选择题型' }]}>
-        <Select>
-          {QUESTION_TYPES.map(type => (
-            <Option key={type} value={type}>{type}</Option>
-          ))}
-        </Select>
-      </Form.Item>
-
-      <Form.Item name="difficulty" label="难度等级" rules={[{ required: true, message: '请选择难度等级' }]}>
-        <InputNumber min={1} max={5} />
-      </Form.Item>
-
-      <Form.Item name="importance" label="重要程度" rules={[{ required: true, message: '请选择重要程度' }]}>
-        <InputNumber min={1} max={3} />
-      </Form.Item>
-
-      {/* 题目内容 */}
-      <Form.Item
-        name="content"
-        label="题目内容"
-        rules={[{ required: true, message: '请输入题目内容' }]}
-        extra="支持富文本编辑，可以添加图片、公式等"
+    <div>
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleSubmit}
+        style={{ maxWidth: 800 }}
       >
-        <EditorField />
-      </Form.Item>
+        {/* 基本信息 */}
+        <Form.Item name="subject" label="科目" rules={[{ required: true, message: '请选择科目' }]}>
+          <Select>
+            {SUBJECTS.map(subject => (
+              <Option key={subject} value={subject}>{subject}</Option>
+            ))}
+          </Select>
+        </Form.Item>
 
-      <Form.Item name="images" label="题目图片" extra="支持上传最多5张图片，每张图片不超过2MB">
-        <ImageUpload maxCount={5} />
-      </Form.Item>
+        <Form.Item name="chapter" label="章节" rules={[{ required: true, message: '请输入章节' }]}>
+          <Input />
+        </Form.Item>
 
-      {/* 答案信息 */}
-      <Form.Item
-        name="correctAnswer"
-        label="正确答案"
-        rules={[{ required: true, message: '请输入正确答案' }]}
+        <Form.Item name="questionType" label="题型" rules={[{ required: true, message: '请选择题型' }]}>
+          <Select>
+            {QUESTION_TYPES.map(type => (
+              <Option key={type} value={type}>{type}</Option>
+            ))}
+          </Select>
+        </Form.Item>
+
+        <Form.Item name="difficulty" label="难度等级" rules={[{ required: true, message: '请选择难度等级' }]}>
+          <InputNumber min={1} max={5} />
+        </Form.Item>
+
+        <Form.Item name="importance" label="重要程度" rules={[{ required: true, message: '请选择重要程度' }]}>
+          <InputNumber min={1} max={3} />
+        </Form.Item>
+
+        {/* 题目内容 */}
+        <Form.Item
+          name="content"
+          label="题目内容"
+          rules={[{ required: true, message: '请输入题目内容' }]}
+          extra="支持富文本编辑，可以添加图片和公式等"
+        >
+          <EditorField />
+        </Form.Item>
+
+        <Form.Item
+          name="images"
+          label="题目图片"
+          extra="支持上传最多5张图片，每张图片不超过2MB。上传后可以识别图片中的文字。"
+        >
+          <ImageUpload maxCount={5} onOCRComplete={handleOCRComplete} />
+        </Form.Item>
+
+        {/* 答案信息 */}
+        <Form.Item
+          name="correctAnswer"
+          label="正确答案"
+          rules={[{ required: true, message: '请输入正确答案' }]}
+        >
+          <EditorField />
+        </Form.Item>
+
+        <Form.Item
+          name="wrongAnswer"
+          label="错误答案"
+          rules={[{ required: true, message: '请输入错误答案' }]}
+        >
+          <EditorField />
+        </Form.Item>
+
+        {/* 错误分析 */}
+        <Form.Item name="errorType" label="错误类型" rules={[{ required: true, message: '请选择错误类型' }]}>
+          <Select>
+            {ERROR_TYPES.map(type => (
+              <Option key={type} value={type}>{type}</Option>
+            ))}
+          </Select>
+        </Form.Item>
+
+        <Form.Item
+          name="reason"
+          label="错误原因"
+          rules={[{ required: true, message: '请输入错误原因' }]}
+        >
+          <EditorField />
+        </Form.Item>
+
+        <Form.Item
+          name="explanation"
+          label="正确思路"
+          rules={[{ required: true, message: '请输入正确思路' }]}
+        >
+          <EditorField />
+        </Form.Item>
+
+        {/* 知识点标签 */}
+        <Form.Item label="知识点标签">
+          <Space wrap>
+            {tags.map((tag) => (
+              <Tag
+                key={tag}
+                closable
+                onClose={() => handleClose(tag)}
+              >
+                {tag}
+              </Tag>
+            ))}
+            {inputVisible ? (
+              <Input
+                ref={inputRef}
+                type="text"
+                size="small"
+                style={{ width: 78 }}
+                value={inputValue}
+                onChange={e => setInputValue(e.target.value)}
+                onBlur={handleInputConfirm}
+                onPressEnter={handleInputConfirm}
+              />
+            ) : (
+              <Tag onClick={showInput} style={{ borderStyle: 'dashed' }}>
+                <PlusOutlined /> 新增标签
+              </Tag>
+            )}
+          </Space>
+        </Form.Item>
+
+        <Form.Item>
+          <Button type="primary" htmlType="submit">
+            保存错题
+          </Button>
+        </Form.Item>
+      </Form>
+
+      {/* 相机模态框 */}
+      <Modal
+        title="拍照识别"
+        open={isCameraVisible}
+        footer={null}
+        onCancel={() => setIsCameraVisible(false)}
+        width={800}
+        destroyOnClose
       >
-        <EditorField />
-      </Form.Item>
+        <Camera onCapture={handleCapture} />
+      </Modal>
 
-      <Form.Item
-        name="wrongAnswer"
-        label="错误答案"
-        rules={[{ required: true, message: '请输入错误答案' }]}
+      {/* 文本校对模态框 */}
+      <Modal
+        title="文本校对"
+        open={isProofreadingVisible}
+        footer={null}
+        onCancel={() => setIsProofreadingVisible(false)}
+        width={800}
+        destroyOnClose
       >
-        <EditorField />
-      </Form.Item>
+        <TextProofreader
+          originalText={recognizedText}
+          onConfirm={handleTextConfirm}
+        />
+      </Modal>
 
-      {/* 错误分析 */}
-      <Form.Item name="errorType" label="错误类型" rules={[{ required: true, message: '请选择错误类型' }]}>
-        <Select>
-          {ERROR_TYPES.map(type => (
-            <Option key={type} value={type}>{type}</Option>
-          ))}
-        </Select>
-      </Form.Item>
-
-      <Form.Item
-        name="reason"
-        label="错误原因"
-        rules={[{ required: true, message: '请输入错误原因' }]}
-      >
-        <EditorField />
-      </Form.Item>
-
-      <Form.Item
-        name="explanation"
-        label="正确思路"
-        rules={[{ required: true, message: '请输入正确思路' }]}
-      >
-        <EditorField />
-      </Form.Item>
-
-      {/* 知识点标签 */}
-      <Form.Item label="知识点标签">
-        <Space wrap>
-          {tags.map((tag) => (
-            <Tag
-              key={tag}
-              closable
-              onClose={() => handleClose(tag)}
-            >
-              {tag}
-            </Tag>
-          ))}
-          {inputVisible ? (
-            <Input
-              ref={inputRef}
-              type="text"
-              size="small"
-              style={{ width: 78 }}
-              value={inputValue}
-              onChange={e => setInputValue(e.target.value)}
-              onBlur={handleInputConfirm}
-              onPressEnter={handleInputConfirm}
-            />
-          ) : (
-            <Tag onClick={showInput} style={{ borderStyle: 'dashed' }}>
-              <PlusOutlined /> 新增标签
-            </Tag>
-          )}
-        </Space>
-      </Form.Item>
-
-      <Form.Item>
-        <Button type="primary" htmlType="submit">
-          保存错题
-        </Button>
-      </Form.Item>
-    </Form>
+      {/* 加载中遮罩 */}
+      {isProcessing && (
+        <div className="processing-overlay">
+          <Spin tip="正在识别文字..." />
+        </div>
+      )}
+    </div>
   );
 };
 

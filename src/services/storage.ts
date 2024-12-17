@@ -49,6 +49,8 @@ export const initDB = async () => {
 export class StorageService {
   private static instance: StorageService;
   private db: Promise<any>;
+  private readonly questionStorageKey = 'error_collection_questions';
+  private readonly userStorageKey = 'error_collection_user';
 
   private constructor() {
     this.db = initDB();
@@ -63,13 +65,26 @@ export class StorageService {
 
   // 用户相关操作
   async saveUser(user: User): Promise<void> {
-    const db = await this.db;
-    await db.put('users', user);
+    try {
+      localStorage.setItem(this.userStorageKey, JSON.stringify(user));
+    } catch (error) {
+      console.error('Failed to save user:', error);
+      throw new Error('Failed to save user to storage');
+    }
   }
 
-  async getUser(id: string): Promise<User | undefined> {
-    const db = await this.db;
-    return db.get('users', id);
+  async getUser(): Promise<User | null> {
+    try {
+      const userData = localStorage.getItem(this.userStorageKey);
+      return userData ? JSON.parse(userData) : null;
+    } catch (error) {
+      console.error('Failed to get user:', error);
+      return null;
+    }
+  }
+
+  public async clearUser(): Promise<void> {
+    localStorage.removeItem(this.userStorageKey);
   }
 
   // 错题相关操作

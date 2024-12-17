@@ -1,0 +1,62 @@
+.camera-container {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  background: #000;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.camera-preview {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.camera-controls {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* 移动设备适配 */
+@media (max-width: 768px) {
+  .camera-container {
+    border-radius: 0;
+  }
+
+  .camera-preview {
+    height: 100vh;
+    object-fit: cover;
+  }
+
+  .camera-controls {
+    bottom: 40px;
+  }
+}
+
+/* 相机按钮样式 */
+.camera-controls .ant-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 2px solid #1890ff;
+}
+
+.camera-controls .ant-btn:hover {
+  background: #e6f7ff;
+}
+
+.camera-controls .anticon {
+  font-size: 24px;
+} 
